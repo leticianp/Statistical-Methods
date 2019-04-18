@@ -1,0 +1,283 @@
+---
+title: "Homework 02 - Statistical Methods for Data Science"
+author: "Letícia Negrão Pinto"
+date: "DSSC - 2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+#              Core Statistics (CS) - Chapter 3
+
+## Exercise	3.3 
+
+* Rewrite the following, replacing the loop with efficient code:
+
+**Answer:**
+At first we have the code:
+```{r ex3.3cs, echo=TRUE}
+
+set.seed(2019)
+
+# We increased n to highlight the time difference
+n <- 100000000
+# rnorm(n) will generate n numbers following a normal distribution, with mean 0 and sd 1
+z <- rnorm(n)
+zneg <- 0
+j <- 1
+
+# We can measure the time using the function 'Sys.time()'
+start_time <- Sys.time()
+
+for (i in 1:n) 
+{
+  if (z[i]<0) 
+    {
+      zneg[j] <- z[i]
+      j <- j + 1
+     }
+}
+
+end_time <- Sys.time()
+end_time - start_time
+```
+
+Replacing the loop with efficient code:
+
+```{r ex3.3cs_answer, echo=TRUE}
+
+start_time <- Sys.time()
+
+	zneg2 <- c(z[which(z<0)])
+
+end_time <- Sys.time()
+end_time - start_time
+```
+
+Now it is necessary to validate the result:
+
+```{r ex3.3cs_validation, echo=TRUE}
+all(zneg2 %in% zneg)
+all(zneg %in% zneg2)
+```
+
+For the validation, we used "%in%" to return a logical vector indicating if there is a match or not for its left operand.
+
+In conclusion, our efficient method produces the same result as the previous one without using a loop for and in less time.
+
+
+#              DAAG - Chapter 3
+
+## Exercise 11
+
+* The following data represent the total number of aberrant crypt foci (abnormal growths in the colon) observed in seven rats that had been administered a single dose of the carcinogen azoxymethane and sacrificed after six weeks (thanks to RanjanaBird, Faculty of Human Ecology,University of Manitoba for the use of these data):
+
+87 53 72 90 78 85 83
+
+Enter these data and compute their sample mean and variance.
+
+**Answer:** 
+
+In order to compute the sample mean and variance we can simply use the R functions mean() and var().
+
+```{r ex3.11a_daag, echo=TRUE}
+
+# The total number abnormal growths in the colon observed in seven rats:
+experimental_data = c(87, 53, 72, 90, 78, 85, 83)
+
+mean(experimental_data)
+var(experimental_data)
+
+```
+
+* Is the Poisson model appropriate for these data? To investigate how the sample variance and sample mean differ under the Poisson assumption, repeat the following simulation experiment several times:
+
+```{r ex3.11_daag, echo=TRUE}
+set.seed(2019)
+
+x <- rpois(7, 78.3)
+mean(x)
+var(x)
+```
+
+**Answer:**
+
+Repeating the previous simulation experiment several times, we can find the following results:
+
+```{r ex3.11b_daag, echo=TRUE}
+mean_x = c()
+var_x = c()
+
+for (i in 1:10000)
+{
+    x <- rpois(7, 78.3)
+    mean_x[i] = mean(x)
+    var_x[i] = var(x)
+}
+
+mean(mean_x)
+hist(var_x, breaks=30, main = 'Histogram of the variance - Poisson with lambda = 78.3')
+
+```
+
+Under the Poisson assumption, considering the parameter $\lambda$ the mean of the experimental sample ( mean(experimental_data) ), the values that can be seen for the most frequent variance of the simulation ( var_x ) call our attention because they are extremely different from what we have obtained for our experiment ( var(experimental_data) ). 
+
+This difference between the variance of the distribution and the variance of experimental data is an indicator that the Poisson model might **not** be the most appropriate to describe the data.
+
+#              DAAG - Chapter 4
+
+## Exercise 7
+
+* Create a function that does the calculations in the first two lines of the previous exercise.Put the calculation in a loop that repeats 25 times. Calculate the mean and variance for each vector y that is returned. Store the 25 means in the vector av, and store the 25 variances in the vector v. Calculate the variance of av.
+
+**Answer:**
+
+In the previous exercise we have:
+```{r ex4.7a_daag, echo=TRUE}
+# Generation of 51 numbers following a normal distribution with mean 0 and sd 1
+y1 <- rnorm(51)
+# Sum of the vectors y1 without the first element with y1 without the last element
+y <- y1[-1] + y1[-51]
+```
+
+We now construct a function:
+```{r ex4.7b_daag, echo=TRUE}
+set.seed(2019)
+
+ function_7 <- function(n = 51){
+ y1 <- rnorm(n)
+ y <- y1[-1] + y1[-n]
+ y
+ }
+
+av <- c()
+varv <- c()
+
+for (i in 1:25) {
+z <- function_7()
+# Mean and variance for each vector y that is returned:
+av[i] <- mean(z)
+varv[i] <- var(z)
+}
+
+#histogram of av and varv:
+par(mfrow = c(1,2))
+hist(av, col = 400)
+hist(varv, col = 400)
+```
+
+Finally, the variance of "av", as required:
+
+```{r ex4.7c_daag, echo=TRUE}
+# The variance of av:
+ var(av)
+```
+
+#              Lab Exercises
+
+## Exercise 3
+
+* Consider now some of the most followed Instagram accounts in 2018: for each of the owners, we report also the number of Twitter followers (in millions). Are the Instagram and Twitter account somehow associated? Perform a correlation test, compute the p-value and give an answer. Here is the data frame.
+
+
+```{r ex3_lab, echo=TRUE}
+      Owners <- c( "Katy Perry", "Justin Bieber", "Taylor Swift", "Cristiano Ronaldo",
+                   "Kim Kardashian", "Ariana Grande", "Selena Gomez", "Demi Lovato")
+      Instagram <- c( 69, 98,107, 123, 110, 118, 135, 67)
+      Twitter <- c( 109, 106, 86, 72, 59, 57, 56, 56)
+      plot( Instagram, Twitter, pch=21, bg=2, xlim=c(60, 150), ylim=c(40, 120) )
+      text( Instagram[-6], Twitter[-6]+5, Owners[-6], cex=0.8 )
+      text( Instagram[6], Twitter[6]-5, Owners[6], cex=0.8 )
+```
+
+**Answer:**
+
+In order to investigate if Instagram and Twitter accounts are somehow associated, we can begin stating what are our hypothesis:
+$$ H_0: \rho = 0 $$
+$$ H_1: \rho \neq 0 $$
+where $\rho$ stands for the correlation between Instagram and Twitter.
+
+In order to investigate the relation between the variables, we can begin by computing the Pearson correlation:
+
+```{r ex3a_lab, echo=TRUE}
+# Computing the correlation and p-value:
+results <- cor.test(Instagram,Twitter)
+results
+```
+
+The Pearson correlation coefficient is a measure of the strength and direction of association that exists between two variables. Its value can range from -1 for a perfect negative linear relationship to +1 for a perfect positive linear relationship. A value of 0 (zero) indicates no relationship between two variables.
+
+In order to perform the computation, we used the R function 'cor.test()', a function that tests for association between paired samples using one of Pearson's product moment correlation coefficient. The function returns both the correlation coefficient and the significance level(or p-value) of the correlation.
+
+Considering that the value obtained was approximately -0.4, we may interpret that the relationship between the Instagram and Twitter accounts are inversely proportional (negative correlation). In general, values between 0.3 and 0.7 (or -0.3 and -0.7) indicate a moderate linear relationship between the variables. However, when considering the p-value, we tend to say that there is **not** a relationship between the variables.
+
+```{r ex3b_lab, echo=TRUE}
+# Correlation:
+results$estimate
+
+# P-value:
+results$p.value
+```
+
+From another point of view, we may think that there might be a linear relationship between the variables. In order to investigate this assumption we do:
+
+```{r ex3c_lab, echo=TRUE}
+# Considering a linear model:
+# Twitter = intercept + beta*Instagram
+linearMod <- lm(Twitter ~ Instagram)
+linearMod
+
+# Model summary:
+summary(linearMod)
+```
+
+Again, considering the values presented by the output of the function "summary()", we tend to say that there is **not** a relationship between the variables.
+
+On the other hand, analysing the graph, one may think that the Demi Lovato’s point is an outlier. In order to investigate this issue we might compute the Cook’s distance:
+
+```{r ex3d_lab, echo=TRUE}
+# Searching for outliers:
+cooksd <- cooks.distance(linearMod)
+
+# We have an indication of outliers - In general use, those observations that have a
+# Cook’s distance greater than 4 times the mean may be classified as influential.
+
+# plot cook's distance:
+plot(cooksd, pch=12, cex=2, main="Influential Observations by Cooks distance") 
+abline(h = 4*mean(cooksd, na.rm=T), col="red")  # cutoff line
+text(x=1:length(cooksd)+1, y=cooksd, labels=ifelse(cooksd>4*mean(cooksd,
+     na.rm=T),names(cooksd),""), col="red")  # labels
+
+```
+Cook’s distance is the scaled change in fitted values, which is useful for identifying outliers. This value shows the influence of each observation on the fitted response values.
+
+Identifying as an outlier and ignoring the Demi Lovato’s data (the 8th observation), now we can compute again the correlation and p-value:
+
+```{r ex3e_lab, echo=TRUE}
+# Ignoring Demi Lovato's data:
+Instagram_without_DL <- Instagram[-length(Instagram)]# Demi Lovato is the last one
+Twitter_without_DL <- Twitter[-length(Twitter)]
+
+# Computing the correlation and p-value:
+results <- cor.test(Instagram_without_DL,Twitter_without_DL)
+results
+
+# Considering a linear model:
+# Twitter = intercept + beta*Instagram
+linearMod <- lm(Twitter_without_DL ~ Instagram_without_DL)
+linearMod
+      
+# Model summary:
+summary(linearMod)
+```
+Ignoring the outlier identified as Demi Lovato's data, it is possible to notice that the values for the correlation and p-value change completely. Considering now the strong correlation and low p-value, now we may conclude that the variables are indeed associated.
+
+```{r ex3f_lab, echo=TRUE}
+# Correlation without Demi Lovato's data:
+results$estimate
+
+# P-value without Demi Lovato's data:
+results$p.value
+```
+In conclusion, we highlight that one must be cautious when considering the presented results. It is clear that more data is needed to assure whether or not the two variables are really associated, since we only have 8 values for each variable at our disposal.
